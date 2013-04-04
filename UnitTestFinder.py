@@ -14,6 +14,12 @@ import sys
 def showUsage():
 	print "USAGE: UnitTestFinder.py <directory to scan> <output text file>"
 
+##################################################
+#constants
+ENDLINE = "\r\n" #Windows
+
+##################################################
+#class FileReader
 class FileReader :
 
 	def __init__(self,filepath):
@@ -41,7 +47,7 @@ class FileReader :
 class ParserCS :
 	def __init__(self):
 		self.lang = "C#"
-		self.newLine = "\r\n"
+		self.newLine = ENDLINE
 	
 	def getExtensions(self):
 		extns = []
@@ -87,7 +93,10 @@ class ParserCS :
 		
 	def createSummary(self, newTest, currentClass):
 		return "class: " + currentClass + " - test: " + newTest + self.newLine
-		
+	
+	def GetDescription(self):
+		return "Unit Tests in " + self.getLang()
+	
 	def parseFile(self, filePath):
 		print('parsing file ' + filePath + '...')
 		
@@ -96,6 +105,8 @@ class ParserCS :
 		reader = FileReader(filePath)
 		
 		testSummaries = []
+		
+		fileHeader = "file: " + filePath + ENDLINE
 		
 		line = reader.GetNextLine()
 		while(not reader.IsEOF()):
@@ -107,7 +118,7 @@ class ParserCS :
 				testSummaries.append(self.createSummary(newTest, currentClass))
 			line = reader.GetNextLine()
 		
-		result = (testSummaries)
+		result = (fileHeader, testSummaries)
 		return result
 
 ##################################################
@@ -130,6 +141,11 @@ def processDir(dirpathToScan, outputTextFilepath):
 	for par in parsers:
 		print('parsing ' + par.getLang() + '...')
 		
+		countOfSummaries = 0
+		
+		summaryFile.write(par.GetDescription() + ENDLINE)
+		summaryFile.write("=" * len(par.GetDescription()) + ENDLINE)
+		
 		for ext in par.getExtensions():
 		
 			#find the files:
@@ -137,11 +153,15 @@ def processDir(dirpathToScan, outputTextFilepath):
 			os.chdir(dirpathToScan)
 			files = glob.glob('*.' + ext)
 			for file_name in sorted(files):
-				print '    ------' + file_name
-				(summaries) = par.parseFile(file_name)
+				print '    ------> ' + file_name
+				
+				(fileHeader, summaries) = par.parseFile(file_name)
+				countOfSummaries = countOfSummaries + len(summaries)
+				summaryFile.write(fileHeader)
 				for summary in summaries:
 					summaryFile.write(summary)
 
+		summaryFile.write(str(countOfSummaries) + " tests found.")
 
 ##################################################
 #main
