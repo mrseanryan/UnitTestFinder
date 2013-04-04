@@ -63,16 +63,16 @@ class ParserCS :
 		nextLine = nextLine.strip()
 		return nextLine
 	
-	def getClassStartToken(self):
-		return "[TestClass]"
+	def getClassStartTokens(self):
+		return [ "[TestClass]", "[TestClass()]" ]
 	
 	def checkForClassStart(self, line, reader):
-		if self.getClassStartToken() in line:
-			nextLine = reader.GetNextLine()
-			className = self.parseClassNameFromLine(nextLine)
-			return className
-		else:
-			return ""
+		for token in self.getClassStartTokens():
+			if token in line:
+				nextLine = reader.GetNextLine()
+				className = self.parseClassNameFromLine(nextLine)
+				return className
+		return ""
 	
 	def parseMethodNameFromLine(self, line):
 		line = line.replace("public void", "")
@@ -80,16 +80,17 @@ class ParserCS :
 		line = line.strip()
 		return line
 
-	def getTestStartToken(self):
-		return "[TestMethod]"
+	def getTestStartTokens(self):
+		tokens = ["[TestMethod]", "[TestMethod()]"]
+		return tokens
 		
 	def checkForTestStart(self, line, reader):
-		if self.getTestStartToken() in line:
-			nextLine = reader.GetNextLine()
-			className = self.parseMethodNameFromLine(nextLine)
-			return className
-		else:
-			return ""
+		for tok in self.getTestStartTokens():
+			if tok in line:
+				nextLine = reader.GetNextLine()
+				className = self.parseMethodNameFromLine(nextLine)
+				return className
+		return ""
 		
 	def createSummary(self, newTest, currentClass):
 		return "lang: " + self.getLang() + " class: " + currentClass + " test: " + newTest + self.newLine
@@ -108,6 +109,8 @@ class ParserCS :
 		
 		fileHeader = "file: " + filePath + ENDLINE
 		
+		currentClass = "(unknown)"
+
 		line = reader.GetNextLine()
 		while(not reader.IsEOF()):
 			nextClass = self.checkForClassStart(line, reader)
