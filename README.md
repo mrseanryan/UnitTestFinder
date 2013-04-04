@@ -18,4 +18,10 @@ Supported languages:
 ====================
 - C#
 
-Plan to add more languages over time.
+Usage
+=====
+USAGE: UnitTestFinder.py <directory to scan> <output text file>
+
+Future
+======
+Plan to add support for more languages over time.
