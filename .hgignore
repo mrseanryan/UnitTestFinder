@@ -1,0 +1,39 @@
+#using glob syntax.
+syntax: glob
+
+#general ignore files
+old
+temp
+
+#ignore files for python
+*.pyc
+
+#ignore files for Visual Studio
+#
+*.pdb
+*.pch
+*.ncb
+*.obj
+*.bsc
+*.ilk
+*.il
+*.tli
+*.tlh
+*.idb
+*.sbr
+*.suo
+*.vshost.exe
+*.csproj.user
+*.csproj.FileListAbsolute.txt
+*.vspscc
+*.vssscc
+obj
+TestResults
+
+#hg temp
+*.orig
+
+#thirdparty (is just a duplicate of 3rdParty in other folders)
+#ArcGisMapSpike/ArcGisMapSpike/js/3rdParty
+ArcGisMapSpikeTests.dll
+ArcGisMapSpike.dll
