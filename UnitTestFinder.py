@@ -92,7 +92,7 @@ class ParserCS :
 			return ""
 		
 	def createSummary(self, newTest, currentClass):
-		return "class: " + currentClass + " - test: " + newTest + self.newLine
+		return "lang: " + self.getLang() + " class: " + currentClass + " test: " + newTest + self.newLine
 	
 	def GetDescription(self):
 		return "Unit Tests in " + self.getLang()
@@ -133,8 +133,7 @@ def createParsers():
 	return parsers
 
 
-def processDir(dirpathToScan, outputTextFilepath):
-	summaryFile = open(outputTextFilepath, "w+")
+def processDir(dirpathToScan, outputTextFilepath, summaryFile):
 	
 	parsers = createParsers()
 	
@@ -143,25 +142,36 @@ def processDir(dirpathToScan, outputTextFilepath):
 		
 		countOfSummaries = 0
 		
-		summaryFile.write(par.GetDescription() + ENDLINE)
-		summaryFile.write("=" * len(par.GetDescription()) + ENDLINE)
+		#summaryFile.write(par.GetDescription() + ENDLINE)
+		#summaryFile.write("=" * len(par.GetDescription()) + ENDLINE)
+		
+		subdirList = []
 		
 		for ext in par.getExtensions():
 		
 			#find the files:
 			print('scanning for files: *.' + ext)
-			os.chdir(dirpathToScan)
-			files = glob.glob('*.' + ext)
-			for file_name in sorted(files):
-				print '    ------> ' + file_name
-				
-				(fileHeader, summaries) = par.parseFile(file_name)
-				countOfSummaries = countOfSummaries + len(summaries)
-				summaryFile.write(fileHeader)
-				for summary in summaries:
-					summaryFile.write(summary)
+			
+			for filename in os.listdir(dirpathToScan):
+				filePath = os.path.join(dirpathToScan, filename)
+				if os.path.isfile(filePath):
+					if filename.lower().endswith("." + ext):
+						print '    ------> ' + filePath
+						
+						(fileHeader, summariesThisFile) = par.parseFile(filePath)
+						if(len(summariesThisFile) > 0):
+							countOfSummaries = countOfSummaries + len(summariesThisFile)
+							summaryFile.write(fileHeader)
+							for summary in summariesThisFile:
+								summaryFile.write(summary)
+							summaryFile.write(ENDLINE)
+				else:
+					subdirList.append(filePath)
 
-		summaryFile.write(str(countOfSummaries) + " tests found.")
+		for subdir in subdirList:
+			countOfSummaries = countOfSummaries + processDir(subdir, outputTextFilepath, summaryFile)
+
+		return countOfSummaries
 
 ##################################################
 #main
@@ -171,8 +181,13 @@ def main(argv):
 		return 1
 	dirpathToScan = argv[1]
 	outputTextFilepath = argv[2]
-	processDir(dirpathToScan, outputTextFilepath)
-
+	
+	summaryFile = open(outputTextFilepath, "w+")
+	countOfSummaries = processDir(dirpathToScan, outputTextFilepath, summaryFile)
+	overallSummary = str(countOfSummaries) + " tests found."
+	summaryFile.write(overallSummary)
+	print(overallSummary)
+	
 if __name__ == "__main__":
 	main(sys.argv)
 
